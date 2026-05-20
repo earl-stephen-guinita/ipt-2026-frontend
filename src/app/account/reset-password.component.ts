@@ -37,22 +37,28 @@ export class ResetPasswordComponent implements OnInit {
             validator: MustMatch('password', 'confirmPassword')
         });
 
+        // STORE the token FIRST
         const token = this.route.snapshot.queryParams['token'];
+        this.token = token;  // ← Save it to component property
 
-        // remove token from url to prevent http referer leakage
+        // NOW remove it from URL
         this.router.navigate([], { relativeTo: this.route, replaceUrl: true });
 
-        this.accountService.validateResetToken(token)
-            .pipe(first())
-            .subscribe({
-                next: () => {
-                    this.token = token;
-                    this.tokenStatus = TokenStatus.Valid;
-                },
-                error: () => {
-                    this.tokenStatus = TokenStatus.Invalid;
-                }
-            });
+        // Validate using the stored token
+        if (this.token) {
+            this.accountService.validateResetToken(this.token)
+                .pipe(first())
+                .subscribe({
+                    next: () => {
+                        this.tokenStatus = TokenStatus.Valid;
+                    },
+                    error: () => {
+                        this.tokenStatus = TokenStatus.Invalid;
+                    }
+                });
+        } else {
+            this.tokenStatus = TokenStatus.Invalid;
+        }
     }
 
     // convenience getter for easy access to form fields
