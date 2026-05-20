@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { first } from 'rxjs/operators';
-
+import { first, timeout } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 import { MustMatch } from '@app/_helpers';
 
@@ -37,17 +36,17 @@ export class ResetPasswordComponent implements OnInit {
             validator: MustMatch('password', 'confirmPassword')
         });
 
-        // STORE the token FIRST
         const token = this.route.snapshot.queryParams['token'];
-        this.token = token;  // ← Save it to component property
+        this.token = token;
 
-        // NOW remove it from URL
         this.router.navigate([], { relativeTo: this.route, replaceUrl: true });
 
-        // Validate using the stored token
         if (this.token) {
             this.accountService.validateResetToken(this.token)
-                .pipe(first())
+                .pipe(
+                    first(),
+                    timeout(60000)
+                )
                 .subscribe({
                     next: () => {
                         this.tokenStatus = TokenStatus.Valid;
@@ -61,16 +60,12 @@ export class ResetPasswordComponent implements OnInit {
         }
     }
 
-    // convenience getter for easy access to form fields
     get f() { return this.form.controls; }
 
     onSubmit() {
         this.submitted = true;
-
-        // reset alerts on submit
         this.alertService.clear();
 
-        // stop here if form is invalid
         if (this.form.invalid) {
             return;
         }
