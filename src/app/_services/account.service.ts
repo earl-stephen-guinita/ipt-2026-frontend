@@ -3,8 +3,6 @@ import { Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable } from "rxjs";
 import { map, finalize } from 'rxjs/operators';
-import { timeout, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 import { environment } from '@environments/environment';
 import { Account } from '@app/_models';
